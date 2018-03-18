@@ -1,0 +1,81 @@
+---
+title: "DSC Demographics"
+author: "John Curcio"
+date: "March 17, 2018"
+output: html_document
+---
+
+```{r}
+dsc_df <- read.csv("dsc-demographics.csv")
+head(dsc_df)
+```
+
+## Removing missing values
+
+```{r}
+sum(is.na(dsc_df$Class.Level)) 
+sum(dsc_df$Class.Level[!is.na(dsc_df$Class.Level)] == "")
+sum(dsc_df$Departments == "")
+sum(dsc_df$Class.Level[!is.na(dsc_df$Class.Level)] == "" &
+      dsc_df$Departments[!is.na(dsc_df$Class.Level)] == "")
+```
+
+When I actually google the names of people with `NA` in their class level, I find that they've got some kind of unusual CMU enrollment status to begin with. At any rate, it's no fault in my code.
+
+```{r}
+dsc_df[is.na(dsc_df$Class.Level),]
+```
+
+When I search for the names of people with empty strings in their class level and department, I find no matches in the directory. 
+
+`mmrosenb` is, for example, a former DSC officer who graduated last year. His emails probably weren't bouncing because he's a manager for the group.
+
+It's possible that these were just andrews that were incorrectly entered.
+
+```{r}
+dsc_df[dsc_df$Class.Level == "",]
+```
+
+Anyway, let's get rid of them all. We're looking at 375 members.
+
+```{r}
+active_dsc_df <- subset(dsc_df, !is.na(dsc_df$Class.Level) & (dsc_df$Departments != ""))
+nrow(active_dsc_df)
+head(active_dsc_df)
+```
+
+## Computing summary stats
+
+```{r}
+table(active_dsc_df$Class.Level) 
+
+table(active_dsc_df$Class.Level) / 375
+```
+
+People can have more than one department, so `Departments` has a ton of levels.
+
+```{r}
+head(active_dsc_df$Departments)
+```
+
+
+```{r}
+sum(grepl("Computer Science", active_dsc_df$Departments))
+sum(grepl("Statistics", active_dsc_df$Departments))
+sum(grepl("Engineering", active_dsc_df$Departments))
+sum(grepl("Electrical &amp; Computer Engineering", active_dsc_df$Departments))
+sum(grepl("Business", active_dsc_df$Departments))
+sum(grepl("Mathematical Sciences", active_dsc_df$Departments))
+```
+
+
+The following 20 majors account for more than 75% of our members. The rest are double-majors or whatever.
+
+Lots of people add Statistics as an additional major.
+
+```{r}
+dept_breakdown <- sort(table(active_dsc_df$Departments), decreasing = T)
+sum(dept_breakdown[1:15])
+dept_breakdown[1:15]
+```
+
